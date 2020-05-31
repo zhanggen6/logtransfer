@@ -23,7 +23,11 @@ func main() {
 	}
 	fmt.Println(appconf)
 	//1.初始化elasticsearch
-	es.Init(appconf.EScfg.Adress)
+	err=es.Init(*appconf)
+	if err != nil {
+		fmt.Println("初始化ES失败",err)
+		return
+	}
 
 	//2.初始化kafka:sara连接kafka的时候consumer.Partitions(topic)需要topic
 	err=kafka.Init([]string{appconf.Kafkacfg.Adress},appconf.Kafkacfg.Topic)

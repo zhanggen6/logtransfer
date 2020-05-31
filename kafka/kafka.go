@@ -7,11 +7,7 @@ import (
 	"time"
 )
 
-//日志数据
-type LogData struct {
-	Time string
-	Logcontent  string
-}
+
 
 
 //Init kafka连接
@@ -36,13 +32,16 @@ func Init(address []string,topic string)(error){
 			return err
 		}
 		//defer pc.AsyncClose()
+		//defer pc.Close()
 		//自执行函数：参数：(partitionConsumer sarama.PartitionConsumer) 传参：(pc)
 		go func(partitionConsumer sarama.PartitionConsumer){
 			for msg:=range pc.Messages(){
 				fmt.Printf("分区:%d offset:%d key:%v value:%v\n",msg.Partition,msg.Offset,msg.Key,string(msg.Value))
 				now := time.Now().Format("2006:1:2 3-4-5")
-				ld:=LogData{now,string(msg.Value)}
-				es.SendToES(topic,"log",ld)
+				ld:=es.LogData{now,string(msg.Value)}
+				//先把数据发送到chennel就返回
+				es.SendToChan(&ld)
+				//es.SendToES(topic,"log",ld)
 			}
 
 		}(pc)
